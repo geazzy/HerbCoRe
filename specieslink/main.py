@@ -76,6 +76,7 @@ class species_link():
             print("erro ao obter informações do conjunto de dados")
             return None
 
+    # busca por registros de biodiversidade
     def search_records(self, filters):
         url = "https://specieslink.net/ws/1.0/search"
         offset = 0

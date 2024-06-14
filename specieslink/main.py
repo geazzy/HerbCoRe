@@ -122,7 +122,7 @@ class species_link():
                                                         # as configurações no dicionário db_config
 
             if conn.is_connected():
-                print("Conexão ao MySQL bem-sucedida!")
+                print("conexão bem-sucedida")
 
             cursor = conn.cursor() # permite executar comandos SQL no banco de dados (?)
 

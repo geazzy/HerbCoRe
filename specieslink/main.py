@@ -184,13 +184,13 @@ class species_link():
                     # com os dados da tupla, inserindo um registro na tabela registros_biodiversidade no banco
 
             conn.commit() # salva as mudanças feitas
-            print(f"Inserção de registros concluída! Total de registros inseridos: {len(df)}")
+            print(f"inserção de registros concluída - total de registros: {len(df)}")
 
         except mysql.connector.Error as err: # exceção de erros
-            print(f"Erro ao conectar ao MySQL: {err}")
+            print(f"erro ao conectar: {err}")
 
         finally: # fecha a conexão, independentemente se deu erro ou não
             if conn and conn.is_connected():
                 conn.close()
-                print("Conexão ao MySQL encerrada.")
+                print("conexão encerrada")
 

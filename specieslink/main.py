@@ -118,23 +118,29 @@ class species_link():
 
     def insert_into_mysql(self, records, db_config): # edição atual: REALMENTE PERCEBEU OS 5000 mas nao insere...
         try: # conectando ao MySQL
-            conn = mysql.connector.connect(**db_config) #  conexão com o banco MySQL usando
+            conn = mysql.connector.connect(**db_config) # conexão com o banco MySQL usando
                                                         # as configurações no dicionário db_config
 
-            if conn.is_connected():
+            if conn.is_connected(): # se a conexão está ativa
                 print("conexão bem-sucedida")
 
-            cursor = conn.cursor() # permite executar comandos SQL no banco de dados (?)
+            cursor = conn.cursor() # cria um cursor permite executar comandos SQL no banco de dados
 
             df = pd.DataFrame(records) # criação do dataframe pandas
-                                       # converte a lista de records em um dataframe
+                                       # converte a lista de records em um dataframe:
+                                       # cada dicionário na lista se torna uma linha no DataFrame,
+                                       # e as chaves dos dicionários se tornam os nomes das colunas
 
-            for index, row in df.iterrows(): # itera sob o dataframe pd
+            for index, row in df.iterrows():  #index armazena o índice (contagem) da linha atual do df durante a iteração
+                                              # df.iterrows itera sobre as linhas do df em pares (índice, série)
+                                              # primeiro elemento é o índice da linha e o segundo é a própria linha
+                                              # como uma série (estrutura de dados de qualquer tipo) do Pandas
                 if 'properties' in row and isinstance(row['properties'], dict): # verifica se a coluna 'properties'
                                                                                 # existe na linha atual e se é um dicionário
-                    properties = row['properties']
+                    properties = row['properties'] # extrai o dicionário contido na properties da row atual
 
-                    barcode = properties.get('barcode', '') # se sim, extrai cada campo do registro para variáveis individuais
+                    barcode = properties.get('barcode', '') # se sim, extrai cada chave do registro para variáveis individuais
+                                                            # se não tiver, o valor retornado será nulo
                     collectioncode = properties.get('collectioncode', '')
                     catalognumber = properties.get('catalognumber', '')
                     scientificname = properties.get('scientificname', '')
@@ -170,7 +176,7 @@ class species_link():
                          locality, institutioncode, basisofrecord, verbatimlatitude, verbatimlongitude, 
                          collectionid, specificepithet, recordedby, decimallongitude, decimallatitude, 
                          modified, scientificnameauthorship, recordnumber, occurrenceremarks) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s)
                     """
                     data = (
                         barcode, collectioncode, catalognumber, scientificname, kingdom, family, genus,
@@ -186,11 +192,10 @@ class species_link():
             conn.commit() # salva as mudanças feitas
             print(f"inserção de registros concluída - total de registros: {len(df)}")
 
-        except mysql.connector.Error as err: # exceção de erros
-            print(f"erro ao conectar: {err}")
+        except mysql.connector.Error as erro: # verificação de erros
+            print(f"erro ao conectar: {erro}")
 
         finally: # fecha a conexão, independentemente se deu erro ou não
-            if conn and conn.is_connected():
-                conn.close()
+            if conn and conn.is_connected(): # se a conexão existe e está ativa
+                conn.close() # fecha a conexão
                 print("conexão encerrada")
-

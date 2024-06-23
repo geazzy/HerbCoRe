@@ -1,8 +1,9 @@
 import requests
+import json
 import mysql.connector
 from mysql.connector import Error
 import pandas as pd
-import json
+from pandas import json_normalize
 
 class species_link():
     def __init__(self, api_key): # __init__ é como um construtor
@@ -80,7 +81,7 @@ class species_link():
     def search_records(self, filters):
         url = "https://specieslink.net/ws/1.0/search"
         offset = 0
-        limit = 5000  # Inicializando com o valor máximo permitido de 5000
+        limit = 5000  # inicializando com o valor máximo permitido de 5000
         # infelizmente não encontrei uma maneira de burlar esse limite ainda. segundo a propria API, esse é seu limite máximo por
         # consultas, então talvez não seja sequer possível
         params = {"apikey": self.apikey} # params é um dicionário; recebe o parametro da URL da requisição HTTP GET
@@ -114,88 +115,93 @@ class species_link():
                 return None
 
         return data #, numberMatched, numberReturned < variáveis retornadas para teste, por isso, comentadas
-
-
-    def insert_into_mysql(self, records, db_config): # edição atual: REALMENTE PERCEBEU OS 5000 mas nao insere...
-        try: # conectando ao MySQL
+    
+    def insert_into_mysql(self, records, db_config):
+        try:
             conn = mysql.connector.connect(**db_config) # conexão com o banco MySQL usando
                                                         # as configurações no dicionário db_config
 
             if conn.is_connected(): # se a conexão está ativa
                 print("conexão bem-sucedida")
-
+            
             cursor = conn.cursor() # cria um cursor permite executar comandos SQL no banco de dados
 
-            df = pd.DataFrame(records) # criação do dataframe pandas
-                                       # converte a lista de records em um dataframe:
-                                       # cada dicionário na lista se torna uma linha no DataFrame,
-                                       # e as chaves dos dicionários se tornam os nomes das colunas
+            df = json_normalize(records, 'features', errors='ignore') # criação do dataframe pandas
+                                                    # converte a lista de JSONs em um dataframe:
+                                                    # records é o que está sendo convertido, features é o argumento
+                                                    # utilizado para especificar os dados de interesse para normalização
+                                                    # erros='ignore' instrui o Pandas a ignorar erros e continuar a operação
+                                                    # mesmo com dificuldades de normalizar os dados
+            # pré normalização dos dados, embora parecesse com um dicionário, records era somente uma representação textual de dados.
+            # após a normalização, ele se torna um dicionário.
 
-            for index, row in df.iterrows():  #index armazena o índice (contagem) da linha atual do df durante a iteração
+            for index, row in df.iterrows():  # index armazena o índice (contagem) da linha atual do df durante a iteração
                                               # df.iterrows itera sobre as linhas do df em pares (índice, série)
                                               # primeiro elemento é o índice da linha e o segundo é a própria linha
                                               # como uma série (estrutura de dados de qualquer tipo) do Pandas
-                if 'properties' in row and isinstance(row['properties'], dict): # verifica se a coluna 'properties'
-                                                                                # existe na linha atual e se é um dicionário
-                    properties = row['properties'] # extrai o dicionário contido na properties da row atual
 
-                    barcode = properties.get('barcode', '') # se sim, extrai cada chave do registro para variáveis individuais
-                                                            # se não tiver, o valor retornado será nulo
-                    collectioncode = properties.get('collectioncode', '')
-                    catalognumber = properties.get('catalognumber', '')
-                    scientificname = properties.get('scientificname', '')
-                    kingdom = properties.get('kingdom', '')
-                    family = properties.get('family', '')
-                    genus = properties.get('genus', '')
-                    yearcollected = properties.get('yearcollected', '')
-                    monthcollected = properties.get('monthcollected', '')
-                    daycollected = properties.get('daycollected', '')
-                    country = properties.get('country', '')
-                    stateprovince = properties.get('stateprovince', '')
-                    county = properties.get('county', '')
-                    locality = properties.get('locality', '')
-                    institutioncode = properties.get('institutioncode', '')
-                    basisofrecord = properties.get('basisofrecord', '')
-                    verbatimlatitude = properties.get('verbatimlatitude', '')
-                    verbatimlongitude = properties.get('verbatimlongitude', '')
-                    collectionid = properties.get('collectionid', 0)
-                    specificepithet = properties.get('specificepithet', '')
-                    recordedby = properties.get('recordedby', '')
-                    decimallongitude = properties.get('decimallongitude', '')
-                    decimallatitude = properties.get('decimallatitude', '')
-                    modified = properties.get('modified', '')
-                    scientificnameauthorship = properties.get('scientificnameauthorship', '')
-                    recordnumber = properties.get('recordnumber', '')
-                    occurrenceremarks = properties.get('occurrenceremarks', '')
+                # acessando diretamente cada coluna do dataframe:
+                properties = row.to_dict() # properties irá conter o dicionário, mantendo as chaves em linhas individuais
 
-                    # inserção no MySQL
-                    insert_query = """ 
-                        INSERT INTO registros_biodiversidade 
-                        (barcode, collectioncode, catalognumber, scientificname, kingdom, family, genus, 
-                         yearcollected, monthcollected, daycollected, country, stateprovince, county, 
-                         locality, institutioncode, basisofrecord, verbatimlatitude, verbatimlongitude, 
-                         collectionid, specificepithet, recordedby, decimallongitude, decimallatitude, 
-                         modified, scientificnameauthorship, recordnumber, occurrenceremarks) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """
-                    data = (
-                        barcode, collectioncode, catalognumber, scientificname, kingdom, family, genus,
-                        yearcollected, monthcollected, daycollected, country, stateprovince, county,
-                        locality, institutioncode, basisofrecord, verbatimlatitude, verbatimlongitude,
-                        collectionid, specificepithet, recordedby, decimallongitude, decimallatitude,
-                        modified, scientificnameauthorship, recordnumber, occurrenceremarks
-                    ) # dados extraídos são adicionados em uma tupla chamada data
+                barcode = properties.get('properties.barcode', '') # extrai cada valor do registro para variáveis individuais
+                                                                   # se não tiver, o valor retornado será nulo
+                collectioncode = properties.get('properties.collectioncode', '')
+                catalognumber = properties.get('properties.catalognumber', '')
+                scientificname = properties.get('properties.scientificname', '')
+                kingdom = properties.get('properties.kingdom', '')
+                family = properties.get('properties.family', '')
+                genus = properties.get('properties.genus', '')
+                yearcollected = properties.get('properties.yearcollected', '')
+                monthcollected = properties.get('properties.monthcollected', '')
+                daycollected = properties.get('properties.daycollected', '')
+                country = properties.get('properties.country', '')
+                stateprovince = properties.get('properties.stateprovince', '')
+                county = properties.get('properties.county', '')
+                locality = properties.get('properties.locality', '')
+                institutioncode = properties.get('properties.institutioncode', '')
+                phylum = properties.get('properties.phylum', '')
+                basisofrecord = properties.get('properties.basisofrecord', '')
+                verbatimlatitude = properties.get('properties.verbatimlatitude', '')
+                verbatimlongitude = properties.get('properties.verbatimlongitude', '')
+                identifiedby = properties.get('properties.identifiedby', '')
+                collectionid = properties.get('properties.collectionid', 0)
+                specificepithet = properties.get('properties.specificepithet', '')
+                recordedby = properties.get('properties.recordedby', '')
+                decimallongitude = properties.get('properties.decimallongitude', '')
+                decimallatitude = properties.get('properties.decimallatitude', '')
+                modified = properties.get('properties.modified', '')
+                scientificnameauthorship = properties.get('properties.scientificnameauthorship', '')
+                recordnumber = properties.get('properties.recordnumber', '')
+                occurrenceremarks = properties.get('properties.occurrenceremarks', '')
 
-                    cursor.execute(insert_query, data) # usa o objeto cursor pra executar a insert_query
-                    # com os dados da tupla, inserindo um registro na tabela registros_biodiversidade no banco
+                # inserção no MySQL
+                insert_query = """
+                    INSERT INTO projeto_herbario.registros_biodiversidade 
+                    (barcode, collectioncode, catalognumber, scientificname, kingdom, family, genus, 
+                     yearcollected, monthcollected, daycollected, country, stateprovince, county, 
+                     locality, institutioncode, phylum, basisofrecord, verbatimlatitude, verbatimlongitude, identifiedby,
+                     collectionid, specificepithet, recordedby, decimallongitude, decimallatitude, 
+                     modified, scientificnameauthorship, recordnumber, occurrenceremarks) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                
+                data = (
+                    barcode, collectioncode, catalognumber, scientificname, kingdom, family, genus,
+                    yearcollected, monthcollected, daycollected, country, stateprovince, county,
+                    locality, institutioncode, phylum, basisofrecord, verbatimlatitude, verbatimlongitude, identifiedby,
+                    collectionid, specificepithet, recordedby, decimallongitude, decimallatitude,
+                    modified, scientificnameauthorship, recordnumber, occurrenceremarks
+                ) # dados extraídos são adicionados em uma tupla chamada data
+
+                cursor.execute(insert_query, data) # adiciona no MySQL
 
             conn.commit() # salva as mudanças feitas
-            print(f"inserção de registros concluída - total de registros: {len(df)}")
+            print(f"Inserção de registros concluída - total de registros: {len(df)}")
 
-        except mysql.connector.Error as erro: # verificação de erros
-            print(f"erro ao conectar: {erro}")
+        except mysql.connector.Error as erro:
+            print(f"Erro ao conectar: {erro}")
 
         finally: # fecha a conexão, independentemente se deu erro ou não
             if conn and conn.is_connected(): # se a conexão existe e está ativa
                 conn.close() # fecha a conexão
-                print("conexão encerrada")
+                print("Conexão encerrada")

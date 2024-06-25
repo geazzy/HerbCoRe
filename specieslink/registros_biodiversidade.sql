@@ -2,6 +2,7 @@ USE projeto_herbario;
 
 DROP TABLE IF EXISTS registros_biodiversidade;
 
+
 CREATE TABLE registros_biodiversidade (
     id INT AUTO_INCREMENT PRIMARY KEY,
     barcode VARCHAR(255),
@@ -36,13 +37,19 @@ CREATE TABLE registros_biodiversidade (
 	occurrenceremarks VARCHAR(255)
 );
 
-# se receber um erro sobre o tamanho de ocurrencemarks não ser o suficiente:
+# se os ID's começarem fora do 1:
+ALTER TABLE registros_biodiversidade AUTO_INCREMENT = 1;
+
+# se receber um erro sobre o tamanho de um campo não ser o suficiente:
 ALTER TABLE projeto_herbario.registros_biodiversidade
-MODIFY occurrenceremarks VARCHAR(500);
+MODIFY occurrenceremarks VARCHAR(4000);
+ALTER TABLE projeto_herbario.registros_biodiversidade
+MODIFY locality VARCHAR(4000);
 
 # variáveis que usei para teste
 SELECT COUNT(*) FROM registros_biodiversidade;
-SELECT * FROM registros_biodiversidade WHERE id = '1';
+SELECT * FROM registros_biodiversidade WHERE id = 5378;
+SELECT * FROM registros_biodiversidade;
 DELETE FROM registros_biodiversidade WHERE id != '';
 SET SQL_SAFE_UPDATES = 0;
 

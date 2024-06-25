@@ -65,6 +65,7 @@ class species_link():
             return None
     
     # dados de um conjunto de dados com um identificador especifico
+
     def get_dataset_info(self, id_dataset):
         url = f"https://specieslink.net/ws/1.0/dts/{id_dataset}/"
         # não tem parâmetro lang
@@ -77,45 +78,53 @@ class species_link():
             print("erro ao obter informações do conjunto de dados")
             return None
 
-    # busca por registros de biodiversidade
+    # busca por registros de biodiversidade    
     def search_records(self, filters):
         url = "https://specieslink.net/ws/1.0/search"
         offset = 0
-        limit = 5000  # inicializando com o valor máximo permitido de 5000
+        limit = 5000 # inicializando com o valor máximo permitido de 5000
         params = {"apikey": self.apikey} # params é um dicionário; recebe o parametro da URL da requisição HTTP GET
                                          # onde a chave é apikey e o valor é self.apikey
-        params.update(filters) #update para pegar os filtros utilizados
+        params.update(filters) # update para pegar os filtros utilizados
         
         numberMatched = 0 # numero total de requests que bateram com os requisitos
         numberReturned = 0 # numero total de requests que foram retornadas; máximo é o limit, que é 5000, como ditado pela API
         data = None # nenhum resultado armazenado ainda
-        total_records = 0 # variável utilizada para a iteração da quantidade de numeros retornados
-
+        
         while True: # loop infinito
             params.update({"offset": offset, "limit": limit}) # atualização dos parametros do dicionario
-            response = requests.get(url, params=params) # HTTP GET para a URL requisitada passando os parametros
+            response = requests.get(url, params=params)  # HTTP GET para a URL requisitada passando os parametros
             
-            if (response.status_code == 200):  # solicitação feita com sucesso se ACK HTTP = 200
-                data = response.json()
-                numberReturned = data.get('numberReturned', 0) # extrai o valor do campo numberReturned e passa para numberReturned
-                                                               # se não existir, assume o valor 0
-                if(offset == 0): # somente se for a primeira pagina
-                    numberMatched = data.get('numberMatched', 0) # extrai o valor do campo numberMatched e passa para numberMatched
-                                                                 # se não existir, assume o valor 0
-                total_records += numberReturned  # atualiza o total de registros recebidos
+            if response.status_code == 200:  # HTTP GET para a URL requisitada passando os parametros
+                response_data = response.json()
+                numberReturned = response_data.get('numberReturned', 0) # extrai o valor do campo numberReturned e passa para numberReturned
+                                                                        # se não existir, assume o valor 0
                 
-                # print(numberMatched) # esses dois prints sao so pra ver se realmente ta rodando e que nao travou
-                # print(numberReturned)
-                if(total_records >= numberMatched): # se todos os registros identificados forem recebidos por total_records
+                if offset == 0: # se for a primeira pagina
+                    numberMatched = response_data.get('numberMatched', 0) # extrai o valor do campo numberMatched e passa para numberMatched
+                                                                          # se não existir, assume o valor 0
+                    data = {'features': []}  # inicializa data como um dicionário vazio, chave features
+                
+                
+                if 'features' in response_data: # se os records dentro do JSON em response_data tiverem o campo features
+                    data['features'].extend(response_data['features']) # acumula os registros diretamente em data['features']
+                
+                print(f"dados passados até o momento: {len(data['features'])}") # print de teste
+                print(f"numeros que batem: {numberMatched}") # esses dois prints sao so pra ver se realmente ta rodando e que nao travou
+                print(f"numeros retornados: {numberReturned}")
+                
+                if len(data['features']) >= numberMatched: # se a quantidade de dados com feature adicionados for maior ou igual
+                                                           # ao número total de requests que bateram com os requisitos
+                                                           # todos os dados foram adicionados
                     break
-            
-                offset += limit  # atualiza o offset para a próxima página de resultados
+                
+                offset += limit # atualiza o offset para a próxima página de resultados
             
             else:
                 print("erro ao obter os registros de biodiversidade")
                 return None
-
-        return data #, numberMatched, numberReturned < variáveis retornadas para teste, por isso, comentadas
+        
+        return data
     
     def insert_into_mysql(self, records, db_config):
         try:

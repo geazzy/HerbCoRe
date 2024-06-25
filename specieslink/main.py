@@ -82,8 +82,6 @@ class species_link():
         url = "https://specieslink.net/ws/1.0/search"
         offset = 0
         limit = 5000  # inicializando com o valor máximo permitido de 5000
-        # infelizmente não encontrei uma maneira de burlar esse limite ainda. segundo a propria API, esse é seu limite máximo por
-        # consultas, então talvez não seja sequer possível
         params = {"apikey": self.apikey} # params é um dicionário; recebe o parametro da URL da requisição HTTP GET
                                          # onde a chave é apikey e o valor é self.apikey
         params.update(filters) #update para pegar os filtros utilizados
@@ -101,17 +99,20 @@ class species_link():
                 data = response.json()
                 numberReturned = data.get('numberReturned', 0) # extrai o valor do campo numberReturned e passa para numberReturned
                                                                # se não existir, assume o valor 0
-                numberMatched = data.get('numberMatched', 0)   # extrai o valor do campo numberMatched e passa para numberMatched
-                                                               # se não existir, assume o valor 0
+                if(offset == 0): # somente se for a primeira pagina
+                    numberMatched = data.get('numberMatched', 0) # extrai o valor do campo numberMatched e passa para numberMatched
+                                                                 # se não existir, assume o valor 0
                 total_records += numberReturned  # atualiza o total de registros recebidos
                 
-                if (total_records >= 5000): # se o número de retornos for maior ou igual ao limite, é a última página
+                # print(numberMatched) # esses dois prints sao so pra ver se realmente ta rodando e que nao travou
+                # print(numberReturned)
+                if(total_records >= numberMatched): # se todos os registros identificados forem recebidos por total_records
                     break
             
                 offset += limit  # atualiza o offset para a próxima página de resultados
             
             else:
-                print("Erro ao obter os registros de biodiversidade")
+                print("erro ao obter os registros de biodiversidade")
                 return None
 
         return data #, numberMatched, numberReturned < variáveis retornadas para teste, por isso, comentadas
@@ -196,12 +197,12 @@ class species_link():
                 cursor.execute(insert_query, data) # adiciona no MySQL
 
             conn.commit() # salva as mudanças feitas
-            print(f"Inserção de registros concluída - total de registros: {len(df)}")
+            print(f"inserção de registros concluída - total de registros: {len(df)}")
 
         except mysql.connector.Error as erro:
-            print(f"Erro ao conectar: {erro}")
+            print(f"erro ao conectar: {erro}")
 
         finally: # fecha a conexão, independentemente se deu erro ou não
             if conn and conn.is_connected(): # se a conexão existe e está ativa
                 conn.close() # fecha a conexão
-                print("Conexão encerrada")
+                print("conexão encerrada")

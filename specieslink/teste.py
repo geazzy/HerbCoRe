@@ -3,7 +3,7 @@ import json
 import pandas as pd 
 
 def main():
-    specieslink = species_link(api_key="EgNGJb7pLEwV67CttplJ")
+    specieslink = species_link(api_key="SUA CHAVE AQUI")
 
     # COMENTE E DESCOMENTE, QUANDO NECESSÁRIO, FUNÇÕES QUE NÃO ESTÃO SENDO UTILIZADAS:
 
@@ -49,14 +49,12 @@ def main():
 
     # registro de biodiversidade filtrados
     filters = {
-        "family": "piperaceae",
-        "country": "Brasil",
-        "stateProvince": "PR"}
+        "family": "piperaceae"}
 
     records = specieslink.search_records(filters)
     if (records):
         print("\n\nregistros de biodiversidade encontrados:\n")
-        print(json.dumps(records, indent=4, ensure_ascii=False))  # formatar a saída JSON.
+        # print(json.dumps(records, indent=4, ensure_ascii=False))  # formatar a saída JSON
         # COMENTE A LINHA ACIMA SE NÃO QUISER VER TODOS OS RESULTADOS EXIBIDOS NO TERMINAL, DESCOMENTE SE QUISER VER
 
         db_config = {

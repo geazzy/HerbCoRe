@@ -37,7 +37,7 @@ CREATE TABLE registros_biodiversidade (
 	occurrenceremarks VARCHAR(255)
 );
 
-# se os ID's começarem fora do 1:
+# se os IDs começarem fora do 1:
 ALTER TABLE registros_biodiversidade AUTO_INCREMENT = 1;
 
 # se receber um erro sobre o tamanho de um campo não ser o suficiente:
@@ -53,3 +53,15 @@ SELECT * FROM registros_biodiversidade;
 DELETE FROM registros_biodiversidade WHERE id != '';
 SET SQL_SAFE_UPDATES = 0;
 
+#FILTRAGEM:
+
+#country
+SELECT country FROM registros_biodiversidade;
+UPDATE registros_biodiversidade
+SET country = 'Brasil'
+WHERE country = 'Brazil'; # só tem brazil, nao tem outras
+						  # possibilidades, por isso, sem IN
+                          # editou 23578 registros
+
+DELETE FROM registros_biodiversidade
+WHERE country != 'Brasil'; # deletou 102838 registros

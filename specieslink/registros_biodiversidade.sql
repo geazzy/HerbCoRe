@@ -51,7 +51,7 @@ SELECT COUNT(*) FROM registros_biodiversidade;
 SELECT * FROM registros_biodiversidade WHERE id = 5378;
 SELECT * FROM registros_biodiversidade;
 DELETE FROM registros_biodiversidade WHERE id != '';
-SET SQL_SAFE_UPDATES = 0;
+SET SQL_SAFE_UPDATES = 0; # caso ele diga que está no safe mode
 
 #FILTRAGEM:
 
@@ -65,3 +65,8 @@ WHERE country = 'Brazil'; # só tem brazil, nao tem outras
 
 DELETE FROM registros_biodiversidade
 WHERE country != 'Brasil'; # deletou 102838 registros
+
+# stateProvince
+SELECT stateProvince FROM registros_biodiversidade;
+DELETE FROM registros_biodiversidade
+WHERE stateProvince IS NULL; # deletou 3500 registros

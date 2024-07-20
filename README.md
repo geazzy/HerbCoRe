@@ -8,6 +8,8 @@ Há possibilidade de filtrar os registros de biodiversidade para receber dados m
 
 Capaz de passar os dados para o MySQL, colocando os registros dentro de uma tabela para pesquisas mais profundas.
 
+Utilize do crawler encontrado [aqui](https://github.com/xaaaandao/downloader-specieslink/tree/master) para conseguir as URLs e as imagens.
+
 ## Pré-requisitos:
 - Ter a linguagem Python instalada, e um ambiente python;
 - Obter as bibliotecas utilizadas:

@@ -23,8 +23,7 @@ Obtenha uma chave para a API se cadastrando no species_link [aqui](https://speci
 
 ## Como usar a ferramenta:
 A ferramenta te pede um conjunto de comandos pelo terminal para executar o que se pede. Caso desconheça os parâmetros necessários para a busca, você pode usar de ```-h``` e ver os comentários com ajuda adicionados.
-```
-python ferramenta.py -h``` lhe mostrará o seguinte:
+```python ferramenta.py -h``` lhe mostrará o seguinte:
 ```
 ```
 interface dos métodos da ferramenta

@@ -5,7 +5,7 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(description='interface dos métodos da ferramenta')
-    subparsers = parser.add_subparsers(dest="command", help="método a ser executado")
+    subparsers = parser.add_subparsers(dest="command", help="método a ser executado") # subparsers permitem que métodos utilizem de argumentos diferentes e serem chamados ou não
 
     metadados = subparsers.add_parser("metadata", help="metadados de espécies") # cria um objeto argumentparser e descreve seu script quando alguém usa -h ou --help
     metadados.add_argument("--api_key", type=str, required=True, help="chave da API") # argumento --api_key, obrigatório, que pede a chave do usuario

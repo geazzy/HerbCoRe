@@ -26,6 +26,7 @@ A ferramenta te pede um conjunto de comandos pelo terminal para executar o que s
 ```
 python ferramenta.py -h``` lhe mostrará o seguinte:
 ```
+```
 interface dos métodos da ferramenta
 
 positional arguments:

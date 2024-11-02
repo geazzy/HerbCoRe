@@ -42,7 +42,7 @@ positional arguments:
 Procurar por algo mais específico, como os parâmetros dos métodos demonstrados acima, requer que você especifique o método quando der o comando de ajuda.
 Por exemplo, ```python ferramenta.py metadata -h``` lhe mostrará o seguinte:
 ```
-usage: teste2.py metadata [-h] --api_key API_KEY [--name NAME] [--id ID]
+usage: ferramenta.py metadata [-h] --api_key API_KEY [--name NAME] [--id ID]
 
 options:
   -h, --help         show this help message and exit

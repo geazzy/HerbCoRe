@@ -11,10 +11,17 @@ class species_link():
                               # api_key é o parametro que se espera receber ao instanciar a classe;
 
     # metadados básicos
-    def get_metadata(self):
+    def get_metadata(self, name=None, id=None):
         url = "https://specieslink.net/ws/1.0/info"
-        response = requests.get(url, params={"apikey": self.apikey}) # params recebe o parametro da URL da requisição HTTP GET
+        params = {"apikey": self.apikey}
+        response = requests.get(url, params=params) # params recebe o parametro da URL da requisição HTTP GET
                                                                      # onde a chave é apikey e o valor é self.apikey
+        if name:
+            params['name'] = name
+        if id:
+            params['id'] = id
+        
+
         if (response.status_code == 200): # solicitação feita com sucesso se ACK HTTP = 200
             data = response.json()
             return data
@@ -25,8 +32,10 @@ class species_link():
     # todas as coleções e instituições participantes
     def get_participants(self):
         url = "https://specieslink.net/ws/1.0/participants"
-        response = requests.get(url, params={"apikey": self.apikey}) # params recebe o parametro da URL da requisição HTTP GET
+        params = {"apikey": self.apikey}
+        response = requests.get(url, params=params) # params recebe o parametro da URL da requisição HTTP GET
                                                                      # onde a chave é apikey e o valor é self.apikey
+            
         if (response.status_code == 200): # solicitação feita com sucesso se ACK HTTP = 200
             data = response.json()
             return data
@@ -35,12 +44,21 @@ class species_link():
             return None
 
     # dados de uma instituição por sigla ou identificador
-    def get_institution_data(self, identifier, lang=None): # lang = none inicialmente indica que é opcional
-        url = f"https://specieslink.net/ws/1.0/ins/{identifier}/" # f-string deixa adicionar expressões
+    def get_institution_data(self, acronym=None, lang=None, id=None): # lang = none inicialmente indica que é opcional
+        if acronym:
+            url = f"https://specieslink.net/ws/1.0/ins/{acronym}/" # f-string deixa adicionar expressões
+        elif id:
+            url = f"https://specieslink.net/ws/1.0/ins/{id}/"
+        else:
+            print("é necessário fornecer um 'acronym' ou um 'id'.")
+            return None
+        
         params = {"apikey": self.apikey} # params é um dicionário; recebe o parametro da URL da requisição HTTP GET
                                          # onde a chave é apikey e o valor é self.apikey
         if (lang):
             params["lang"] = lang # adicionando parametro lang ao dicionario params para filtragem
+        # valores de acronym ou id não são passados pois já estão embutidos na URL, não são parte da query string
+
         response = requests.get(url, params=params) # HTTP GET para a URL requisitada passando os parametros
         if (response.status_code == 200): # solicitação feita com sucesso se ACK HTTP = 200
             data = response.json()
@@ -50,12 +68,21 @@ class species_link():
             return None
 
     # dados de uma coleção por sigla ou identificador
-    def get_collection_data(self, identifier, lang=None): # lang = none inicialmente indica que é opcional
-        url = f"https://specieslink.net/ws/1.0/col/{identifier}/"  # f-string deixa adicionar expressões
+    def get_collection_data(self, acronym=None, lang=None, id=None): # lang = none inicialmente indica que é opcional
+        if acronym:
+            url = f"https://specieslink.net/ws/1.0/col/{acronym}/" # f-string deixa adicionar expressões
+        elif id:
+            url = f"https://specieslink.net/ws/1.0/col/{id}/"
+        else:
+            print("é necessário fornecer um 'acronym' ou um 'id'.")
+            return None
+        
         params = {"apikey": self.apikey} # params é um dicionário; recebe o parametro da URL da requisição HTTP GET
                                          # onde a chave é apikey e o valor é self.apikey
         if (lang):
             params["lang"] = lang # adicionando parametro lang ao dicionario params para filtragem 
+            # valores de acronym ou id não são passados pois já estão embutidos na URL, não são parte da query string
+
         response = requests.get(url, params=params)  # HTTP GET para a URL requisitada passando os parametros
         if (response.status_code == 200): # solicitação feita com sucesso se ACK HTTP = 200
             data = response.json()
@@ -65,12 +92,17 @@ class species_link():
             return None
     
     # dados de um conjunto de dados com um identificador especifico
+    def get_dataset_info(self, id=None):
+        if id:
+            url = f"https://specieslink.net/ws/1.0/dts/{id}/"
+        else:
+            print("é necessário fornecer um 'id'.")
+            return None
 
-    def get_dataset_info(self, id_dataset):
-        url = f"https://specieslink.net/ws/1.0/dts/{id_dataset}/"
         # não tem parâmetro lang
         response = requests.get(url, params={"apikey": self.apikey}) # params recebe o parametro da URL da requisição HTTP GET
                                                                      # onde a chave é apikey e o valor é self.apikey
+                                                                     
         if (response.status_code == 200): # solicitação feita com sucesso se ACK HTTP = 200
             data = response.json()
             return data
@@ -85,6 +117,7 @@ class species_link():
         limit = 5000 # inicializando com o valor máximo permitido de 5000
         params = {"apikey": self.apikey} # params é um dicionário; recebe o parametro da URL da requisição HTTP GET
                                          # onde a chave é apikey e o valor é self.apikey
+
         params.update(filters) # update para pegar os filtros utilizados
         
         numberMatched = 0 # numero total de requests que bateram com os requisitos
@@ -95,7 +128,7 @@ class species_link():
             params.update({"offset": offset, "limit": limit}) # atualização dos parametros do dicionario
             response = requests.get(url, params=params)  # HTTP GET para a URL requisitada passando os parametros
             
-            if response.status_code == 200:  # HTTP GET para a URL requisitada passando os parametros
+            if response.status_code == 200: # solicitação feita com sucesso se ACK HTTP = 200
                 response_data = response.json()
                 numberReturned = response_data.get('numberReturned', 0) # extrai o valor do campo numberReturned e passa para numberReturned
                                                                         # se não existir, assume o valor 0
@@ -126,7 +159,7 @@ class species_link():
         
         return data
     
-    def insert_into_mysql(self, records, db_config):
+    def insert_into_mysql(self, records, db_config, schema):
         try:
             conn = mysql.connector.connect(**db_config) # conexão com o banco MySQL usando
                                                         # as configurações no dicionário db_config
@@ -185,8 +218,8 @@ class species_link():
                 occurrenceremarks = properties.get('properties.occurrenceremarks', '')
 
                 # inserção no MySQL
-                insert_query = """
-                    INSERT INTO projeto_herbario.registros_biodiversidade 
+                insert_query = f"""
+                    INSERT INTO {schema}.registros_biodiversidade 
                     (barcode, collectioncode, catalognumber, scientificname, kingdom, family, genus, 
                      yearcollected, monthcollected, daycollected, country, stateprovince, county, 
                      locality, institutioncode, phylum, basisofrecord, verbatimlatitude, verbatimlongitude, identifiedby,

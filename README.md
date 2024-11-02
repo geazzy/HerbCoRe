@@ -13,13 +13,10 @@ Utilize do crawler encontrado [aqui](https://github.com/xaaaandao/downloader-spe
 Obtenha uma chave para a API se cadastrando no species_link [aqui](https://specieslink.net/ws/1.0/)
 
 ## Pré-requisitos:
-- Ter a linguagem Python instalada, e um ambiente python;
-- Obter as bibliotecas utilizadas:
-  ```python
-  pip install pandas
-  pip install mysql-connector-python
-  ```
-- Instalar e configurar o MySQL, utilizando da tabela registros_biodiversidade;
+- Utilizar de ```requirements.txt``` para instalar os requisitos utilizando o seguinte comando:
+```
+pip install -r requirements.txt
+```
 
 ## Como usar a ferramenta:
 A ferramenta te pede um conjunto de comandos pelo terminal para executar o que se pede. Caso desconheça os parâmetros necessários para a busca, você pode usar de ```-h``` e ver os comentários com ajuda adicionados.

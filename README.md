@@ -1,5 +1,5 @@
 # Projeto-Herbario
-Catalogação do meu código sobre um projeto de machine learning focado especialmente em plantas do herbário da UTFPR, com auxílio do professor André Luis Schwerz.
+Catalogação do meu código sobre uma ferramenta para seleção e filtragem de acervos de dados relacionados à plantas de herbários, com auxílio do professor André Luis Schwerz.
 
 ## Sobre a pasta specieslink:
 Código feito para consulta de metadados, tais como tipos, listas ou dados de coleção e/ou instituição, além de informações sobre um conjunto de dados, através de uma API do specieslink. Na pasta, encontra-se a ferramenta das consultas e a table e script SQL.
@@ -9,6 +9,7 @@ Há possibilidade de filtrar os registros de biodiversidade para receber dados m
 Capaz de passar os dados para o MySQL, colocando os registros dentro de uma tabela para pesquisas mais profundas.
 
 Utilize do crawler encontrado [aqui](https://github.com/xaaaandao/downloader-specieslink/tree/master) para conseguir as URLs e as imagens.
+Leia mais sobre o catálogo de Leipzig e o lcvplants [aqui](https://github.com/idiv-biodiversity/lcvplants).
 
 Obtenha uma chave para a API se cadastrando no species_link [aqui](https://specieslink.net/ws/1.0/)
 

@@ -1,9 +1,11 @@
 import requests
 import json
-import mysql.connector
-from mysql.connector import Error
+# import mysql.connector
+# from mysql.connector import Error
 import pandas as pd
 from pandas import json_normalize
+import pymysql
+import csv
 
 class species_link():
     def __init__(self, api_key): # __init__ é como um construtor
@@ -156,16 +158,20 @@ class species_link():
             else:
                 print("erro ao obter os registros de biodiversidade")
                 return None
-        
+    
         return data
     
-    def insert_into_mysql(self, records, db_config, schema):
+    def insert_into_mysql(self, records, db_config, table):
+        conn = None
         try:
-            conn = mysql.connector.connect(**db_config) # conexão com o banco MySQL usando
-                                                        # as configurações no dicionário db_config
+            conn = pymysql.connect(**db_config) # conexão com o banco MySQL usando
+                                                # as configurações no dicionário db_config
 
-            if conn.is_connected(): # se a conexão está ativa
+            if conn.open: # se a conexão está ativa
                 print("conexão bem-sucedida")
+            else:
+                print("falha na conexão com o banco")
+                return
             
             cursor = conn.cursor() # cria um cursor permite executar comandos SQL no banco de dados
 
@@ -178,48 +184,52 @@ class species_link():
             # pré normalização dos dados, embora parecesse com um dicionário, records era somente uma representação textual de dados.
             # após a normalização, ele se torna um dicionário.
 
+            df = json_normalize(records, 'features', errors='ignore') # transforma json em pandas
+            df = df.where(pd.notna(df), None)  # substitui NaN por None
+
             for index, row in df.iterrows():  # index armazena o índice (contagem) da linha atual do df durante a iteração
                                               # df.iterrows itera sobre as linhas do df em pares (índice, série)
                                               # primeiro elemento é o índice da linha e o segundo é a própria linha
                                               # como uma série (estrutura de dados de qualquer tipo) do Pandas
-
+                print(f"inserindo registro {index+1}...")
                 # acessando diretamente cada coluna do dataframe:
-                properties = row.to_dict() # properties irá conter o dicionário, mantendo as chaves em linhas individuais
+                #properties = row.to_dict() # properties irá conter o dicionário, mantendo as chaves em linhas individuais
+                properties = row.replace({pd.NA: None}).to_dict()
 
-                barcode = properties.get('properties.barcode', '') # extrai cada valor do registro para variáveis individuais
+                barcode = properties.get('properties.barcode', None) # extrai cada valor do registro para variáveis individuais
                                                                    # se não tiver, o valor retornado será nulo
-                collectioncode = properties.get('properties.collectioncode', '')
-                catalognumber = properties.get('properties.catalognumber', '')
-                scientificname = properties.get('properties.scientificname', '')
-                kingdom = properties.get('properties.kingdom', '')
-                family = properties.get('properties.family', '')
-                genus = properties.get('properties.genus', '')
-                yearcollected = properties.get('properties.yearcollected', '')
-                monthcollected = properties.get('properties.monthcollected', '')
-                daycollected = properties.get('properties.daycollected', '')
-                country = properties.get('properties.country', '')
-                stateprovince = properties.get('properties.stateprovince', '')
-                county = properties.get('properties.county', '')
-                locality = properties.get('properties.locality', '')
-                institutioncode = properties.get('properties.institutioncode', '')
-                phylum = properties.get('properties.phylum', '')
-                basisofrecord = properties.get('properties.basisofrecord', '')
-                verbatimlatitude = properties.get('properties.verbatimlatitude', '')
-                verbatimlongitude = properties.get('properties.verbatimlongitude', '')
-                identifiedby = properties.get('properties.identifiedby', '')
+                collectioncode = properties.get('properties.collectioncode', None)
+                catalognumber = properties.get('properties.catalognumber', None)
+                scientificname = properties.get('properties.scientificname', None)
+                kingdom = properties.get('properties.kingdom', None)
+                family = properties.get('properties.family', None)
+                genus = properties.get('properties.genus', None)
+                yearcollected = properties.get('properties.yearcollected', None)
+                monthcollected = properties.get('properties.monthcollected', None)
+                daycollected = properties.get('properties.daycollected', None)
+                country = properties.get('properties.country', None)
+                stateprovince = properties.get('properties.stateprovince', None)
+                county = properties.get('properties.county', None)
+                locality = properties.get('properties.locality', None)
+                institutioncode = properties.get('properties.institutioncode', None)
+                phylum = properties.get('properties.phylum', None)
+                basisofrecord = properties.get('properties.basisofrecord', None)
+                verbatimlatitude = properties.get('properties.verbatimlatitude', None)
+                verbatimlongitude = properties.get('properties.verbatimlongitude', None)
+                identifiedby = properties.get('properties.identifiedby', None)
                 collectionid = properties.get('properties.collectionid', 0)
-                specificepithet = properties.get('properties.specificepithet', '')
-                recordedby = properties.get('properties.recordedby', '')
-                decimallongitude = properties.get('properties.decimallongitude', '')
-                decimallatitude = properties.get('properties.decimallatitude', '')
-                modified = properties.get('properties.modified', '')
-                scientificnameauthorship = properties.get('properties.scientificnameauthorship', '')
-                recordnumber = properties.get('properties.recordnumber', '')
-                occurrenceremarks = properties.get('properties.occurrenceremarks', '')
+                specificepithet = properties.get('properties.specificepithet', None)
+                recordedby = properties.get('properties.recordedby', None)
+                decimallongitude = properties.get('properties.decimallongitude', None)
+                decimallatitude = properties.get('properties.decimallatitude', None)
+                modified = properties.get('properties.modified', None)
+                scientificnameauthorship = properties.get('properties.scientificnameauthorship', None)
+                recordnumber = properties.get('properties.recordnumber', None)
+                occurrenceremarks = properties.get('properties.occurrenceremarks', None)
 
                 # inserção no MySQL
                 insert_query = f"""
-                    INSERT INTO {schema}.registros_biodiversidade 
+                    INSERT INTO {db_config['database']}.{table}
                     (barcode, collectioncode, catalognumber, scientificname, kingdom, family, genus, 
                      yearcollected, monthcollected, daycollected, country, stateprovince, county, 
                      locality, institutioncode, phylum, basisofrecord, verbatimlatitude, verbatimlongitude, identifiedby,
@@ -237,14 +247,153 @@ class species_link():
                 ) # dados extraídos são adicionados em uma tupla chamada data
 
                 cursor.execute(insert_query, data) # adiciona no MySQL
+                print(f"registro {index+1} inserido com sucesso")
 
             conn.commit() # salva as mudanças feitas
             print(f"inserção de registros concluída - total de registros: {len(df)}")
 
-        except mysql.connector.Error as erro:
+        except pymysql.MySQLError as erro:
             print(f"erro ao conectar: {erro}")
+        except Exception as e:
+                print(f"erro inesperado: {e}")
 
         finally: # fecha a conexão, independentemente se deu erro ou não
-            if conn and conn.is_connected(): # se a conexão existe e está ativa
+            if conn and conn.open: # se a conexão existe e está ativa
                 conn.close() # fecha a conexão
+                print("conexão encerrada")
+
+    def export_to_csv(self, filters, db_config, table, columns=None, output_csv_path=None):
+        conn = None
+        try:
+            conn = pymysql.connect(**db_config) # conexão com o banco MySQL usando
+                                                # as configurações no dicionário db_config
+            if conn.open: # se a conexão está ativa
+                print("conexão bem-sucedida")
+            else:
+                print("falha na conexão com o banco")
+                return
+
+            cursor = conn.cursor()
+
+            where_clauses = [] # constrói o WHERE com base nos filtros passados
+            values = []
+
+            for column, value in filters.items(): # para cada valor em cada coluna dos argumentos passados para filtragem
+                where_clauses.append(f"{column} = %s") # copia a coluna para servir de pré-condição da filtragem
+                values.append(value) # salva os valores requisitados pelo filtro, completando o argumento
+
+            if where_clauses:  # se tem parâmetros WHERE
+                where_clause = " AND ".join(where_clauses) # AND será o separador de todos os argumentos, ou seja, X AND Y AND Z
+            else:
+                where_clause = "1=1" # 1=1 é usado para retornar tudo caso nao tenha parâmetros
+
+            # se columns for fornecido, usamos ele, caso contrário, pegamos todas as colunas
+            if columns:
+                query_columns = columns  # usamos as colunas especificadas
+            else:
+                query_columns = "*"  # se não for especificado, pegamos todas as colunas
+
+            query = f"""
+                SELECT 
+                    {query_columns}
+                FROM {db_config['database']}.{table}
+                WHERE {where_clause}
+            """
+
+            print(f"query gerada: {query}")
+
+            # executa a query com os filtros
+            cursor.execute(query, values)
+            results = cursor.fetchall() # recupera os resultados
+
+            print(f"número de registros encontrados: {len(results)}")
+
+            if results:  # se tiver resultados
+                with open(output_csv_path, mode='w', newline=None, encoding='utf-8') as csv_file:
+                    writer = csv.writer(csv_file)
+
+                    if columns:  # se tiver colunas especificadas
+                        writer.writerow([columns])
+                    else:
+                        # se não tiver especificado, usa todas as colunas do banco
+                        column_names = [desc[0] for desc in cursor.description]
+                        writer.writerow(column_names)
+
+                    # escreve os dados
+                    for row in results:
+                        writer.writerow(row)
+
+                print(f"exportação concluída. arquivo salvo em: {output_csv_path}")
+            else:
+                print("nenhum registro encontrado com os filtros aplicados.")
+
+        except pymysql.MySQLError as erro:
+            print(f"erro ao conectar: {erro}")
+        except Exception as e:
+                print(f"erro inesperado: {e}")
+        finally:
+            if conn and conn.open:
+                conn.close()
+                print("conexão encerrada")
+
+    def update_records(self, filters, update_values, db_config, table):
+        conn = None
+        try:
+            conn = pymysql.connect(**db_config) # conexão com o banco MySQL usando
+                                                # as configurações no dicionário db_config
+            if conn.open: # se a conexão está ativa
+                print("conexão bem-sucedida")
+            else:
+                print("falha na conexão com o banco")
+                return
+
+            cursor = conn.cursor()
+            cursor.execute("SET SQL_SAFE_UPDATES = 0;") # desativa a segurança de updates
+
+            where_clauses = []  # constrói o WHERE com base nos filtros passados
+            set_clauses = []  # # constrói o SET com base nos filtros passados
+            values = []  
+
+            for column, value in filters.items(): # para cada valor em cada coluna dos argumentos passados para filtragem
+                where_clauses.append(f"{column} = %s") # copia a coluna para servir de pré-condição da filtragem
+                values.append(value) # salva os valores requisitados pelo filtro, completando o argumento
+
+
+            for column, value in update_values.items(): # para cada valor em cada coluna dos valores para update
+                set_clauses.append(f"{column} = %s") # copia a coluna
+                values.insert(0, value) # insere o valor na primeira posição de value, substituindo o anterior
+                                        # (ou seja, SET x = valor_novo WHERE x = valor_antigo)
+
+            if where_clauses: # se tem parâmetros WHERE
+                where_clause = " AND ".join(where_clauses) # AND será o separador de todos os argumentos, ou seja, X AND Y AND Z
+            else:
+                raise ValueError("nenhum filtro fornecido para o update")
+
+            if set_clauses: # se tem parâmetros SET
+                set_clause = ", ".join(set_clauses) # ',' será o separador de todos os argumentos, ou seja, SET X = x, Y = y
+            else:
+                raise ValueError("nenhum valor para atualização fornecido.")
+
+            # atualizando o SQL
+            query = f"""
+                UPDATE {db_config['database']}.{table}
+                SET {set_clause}
+                WHERE {where_clause}
+            """
+            print("query gerada para UPDATE:", query)
+            print("valores para UPDATE:", values)
+
+            # executa a query com os filtros
+            cursor.execute(query, values)
+            conn.commit() # salva
+
+            print(f"{cursor.rowcount} registro(s) atualizado(s).")
+
+        except pymysql.MySQLError as erro:
+            print(f"erro ao conectar: {erro}")
+        except Exception as e:
+                print(f"erro inesperado: {e}")
+        finally:
+            if conn and conn.open:
+                conn.close()
                 print("conexão encerrada")

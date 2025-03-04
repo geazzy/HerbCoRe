@@ -2,45 +2,89 @@ from main_f import species_link
 import json
 # import pandas as pd
 import argparse
+import os
+
+def get_config():
+    if os.path.exists('config.json'): # se o json existe
+        with open('config.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return None
+
+def save_config(config):
+    with open('config.json', 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=4, ensure_ascii=False)
+
+def ask_for_missing_values():
+    # chamado quando config nao possui todos os seus valores configurados no json
+    config = {}
+    
+    config['api_key'] = input("Informe a chave da API: ").strip().strip('"') # pra não ficar com " duplicado
+    config['db_user'] = input("informe o usuário do banco de dados: ").strip().strip('"')
+    config['db_password'] = input("informe a senha do banco de dados: ").strip().strip('"')
+    config['db_host'] = input("informe o host do banco de dados (exemplo: 127.0.0.1): ").strip().strip('"')
+    config['db_schema'] = input("informe o schema do banco de dados: ").strip().strip('"')
+
+    save_config(config)
+    
+    return config
 
 def main():
+    config = get_config()
+    
+    # se config está vazio ou incompleto, pede o resto
+    if config is None or 'api_key' not in config or 'db_user' not in config or 'db_password' not in config or 'db_host' not in config or 'db_schema' not in config:
+        config = ask_for_missing_values()
+
+    api_key = config['api_key']
+    db_config = {
+        'user': config['db_user'],
+        'password': config['db_password'],
+        'host': config['db_host'],
+        'database': config['db_schema']
+    }
+
     parser = argparse.ArgumentParser(description='interface dos métodos da ferramenta')
     subparsers = parser.add_subparsers(dest="command", help="método a ser executado") # subparsers permitem que métodos utilizem de argumentos diferentes e serem chamados ou não
 
-    metadados = subparsers.add_parser("metadata", help="metadados de espécies") # cria um objeto argumentparser e descreve seu script quando alguém usa -h ou --help
-    metadados.add_argument("--api_key", type=str, required=True, help="chave da API") # argumento --api_key, obrigatório, que pede a chave do usuario
+    metadados = subparsers.add_parser("metadata", help="metadados básicos") # cria um objeto argumentparser e descreve seu script quando alguém usa -h ou --help
     metadados.add_argument('--name', type=str, help='nome a ser identificado') # argumento --name, opcional, para a filtragem de um nome
     metadados.add_argument('--id', type=str, help='id a ser identificado')
 
-    participantes = subparsers.add_parser("participants", help="instituições participantes")
-    participantes.add_argument("--api_key", type=str, required=True, help="chave da API")
+    participants = subparsers.add_parser("participants", help="instituições participantes")
 
     instituition = subparsers.add_parser("instituition", help="instiuições específicas")
-    instituition.add_argument("--api_key", type=str, required=True, help="chave da API")
     instituition.add_argument('--acronym', type=str, help='sigla a ser identificada')
     instituition.add_argument('--id', type=str, help='id a ser identificado')
     instituition.add_argument('--lang', type=str, help='linguagem escolhida')
 
     collection = subparsers.add_parser("collection", help="coleções específicas")
-    collection.add_argument("--api_key", type=str, required=True, help="chave da API")
     collection.add_argument('--acronym', type=str, help='sigla a ser identificada')
     collection.add_argument('--id', type=str, help='id a ser identificado')
     collection.add_argument('--lang', type=str, help='linguagem escolhida')
 
     dataset = subparsers.add_parser("dataset", help="conjunto de dados específicos")
-    dataset.add_argument("--api_key", type=str, required=True, help="chave da API")
     dataset.add_argument('--id', type=str, help='id a ser identificado')
 
     records = subparsers.add_parser("records", help="registros filtrados")
-    records.add_argument('--api_key', type=str, required=True, help="chave da API")
     records.add_argument('--filters', required=True, nargs='*', help="filtros no formato chave=valor (ex: família=rosas)") # nargs permite múltiplos filtros no formato chave=valor
-    records.add_argument('--schema', type=str, required=True, help="schema do banco de dados")
+    records.add_argument('--table', type=str, required=True, help="tabela do banco de dados")
+
+    export = subparsers.add_parser("export", help="realiza uma consulta SQL e retorna um CSV")
+    export.add_argument('--filters', required=True, nargs='*', help="filtros no formato chave=valor (ex: família=rosas)")
+    export.add_argument('--table', type=str, required=True, help="tabela do banco de dados")
+    export.add_argument('--columns', type=str, help="colunas que devem ser trazidas")
+    export.add_argument('--output_csv_path', type=str, required=True, help="caminho para salvar o CSV")
+
+    update = subparsers.add_parser("update", help="atualiza registros do banco baseado em parâmetros")
+    update.add_argument('--filters', required=True, nargs='*', help="filtros no formato chave=valor (ex: família=rosas)")
+    update.add_argument('--update_values', required=True, nargs='*', help="valores a serem atualizados no formato chave=valor (ex: estado=São Paulo familia=Piperaceae)")
+    update.add_argument('--table', type=str, required=True, help="tabela do banco de dados")
 
     args = parser.parse_args()
 
+    specieslink = species_link(api_key=api_key) # o usuario passa sua propria chave da API
+    
     # metadados básicos
-
-    specieslink = species_link(api_key=args.api_key) # o usuario passa sua propria chave da API
 
     if args.command == "metadata":
         metadata = specieslink.get_metadata(name=args.name, id=args.id) # parametro do método, por ex pede o nome da instituiçao
@@ -94,16 +138,30 @@ def main():
         records = specieslink.search_records(filters=filters)
         if records:
             print("\n\nRegistros filtrados:\n")
-            print(json.dumps(records, indent=4, ensure_ascii=False)) # print formatado
+            # print(json.dumps(records, indent=4, ensure_ascii=False)) # print formatado, descomente para ver no terminal. NÃO RECOMENDADO SE FOR UMA PESQUISA COM MUITOS RESULTADOS
             
-            db_config = {
-                'user': 'root',
-                'password': 'root',
-                'host': '127.0.0.1',
-                'database': args.schema
-            }
+            specieslink.insert_into_mysql(records, db_config, table=args.table)     
 
-            specieslink.insert_into_mysql(records, db_config, args.schema)        
+    elif args.command == "export":
+        filters = {}  # dicionário de filtros
+        for item in args.filters:  # para cada filtro adicionado
+            key, value = item.split('=')  # divide chave e valor com = como delimitador
+            filters[key] = value  # adiciona o par ao dicionário
+
+        specieslink.export_to_csv(filters=filters, db_config=db_config, table=args.table, columns=args.columns, output_csv_path=args.output_csv_path)
+
+    elif args.command == "update":
+        filters = {}  # dicionário de filtros
+        for item in args.filters:  # para cada filtro adicionado
+            key, value = item.split('=')  # divide chave e valor com = como delimitador
+            filters[key] = value  # adiciona o par ao dicionário
+
+        update_values = {} # valores atualizados
+        for item in args.update_values:  # para cada valor a ser atualizado
+            key, value = item.split('=')  # divide chave e valor com '='
+            update_values[key] = value  # adiciona o par ao dicionário
+
+        specieslink.update_records(filters=filters, update_values=update_values, db_config=db_config, table=args.table)
 
 if __name__ == "__main__":
     main()

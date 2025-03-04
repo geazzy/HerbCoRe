@@ -1,8 +1,8 @@
 # HerbCoRe
 Catalogação do meu código sobre a HerbCoRe: uma ferramenta para seleção e filtragem de acervos de dados relacionados à plantas de herbários, com auxílio do professor André Luis Schwerz.
 
-## Sobre a pasta specieslink:
-Código feito para consulta de metadados, tais como tipos, listas ou dados de coleção e/ou instituição, além de informações sobre um conjunto de dados, através de uma API do specieslink. Na pasta, encontra-se a ferramenta das consultas e a table e script SQL.
+## Sobre a pasta ferramenta_herbcore:
+Código feito para consulta de metadados, tais como tipos, listas ou dados de coleção e/ou instituição, além de informações sobre um conjunto de dados, através de uma API do specieslink. Na pasta, encontra-se a ferramenta das consultas (speciesLink e banco prório) e a table e script SQL. No arquivo sinonimos.py, está a filtragem a partir do [catálogo de Leipzig](https://www.nature.com/articles/s41597-020-00702-z).
 
 Há possibilidade de filtrar os registros de biodiversidade para receber dados mais específicos - o retorno não possui limitação de tamanho.
 

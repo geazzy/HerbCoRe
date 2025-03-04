@@ -34,6 +34,8 @@ positional arguments:
     collection          coleções específicas
     dataset             conjunto de dados específicos
     records             registros filtrados
+    export              realiza uma consulta SQL e retorna um CSV
+    update              atualiza registros do banco baseado em parâmetros
 ```
 
 Procurar por algo mais específico, como os parâmetros dos métodos demonstrados acima, requer que você especifique o método quando der o comando de ajuda.
@@ -43,17 +45,18 @@ usage: ferramenta.py metadata [-h] --api_key API_KEY [--name NAME] [--id ID]
 
 options:
   -h, --help         show this help message and exit
-  --api_key API_KEY  chave da API
   --name NAME        nome a ser identificado
   --id ID            id a ser identificado
 ```
 
 ### Exemplos de uso dos comandos, na ordem dos métodos:
 ```python
-python ferramenta.py metadata --api_key "sua chave aqui" --name "Secretaria Estadual" --id "400"
-python ferramenta.py participants --api_key "sua chave aqui" 
-python ferramenta.py instituition --api_key "sua chave aqui" --acronym "USP" --id "393" --lang "en"  
-python ferramenta.py collection --api_key "sua chave aqui" --acronym "ESA" --id "8" --lang "pt-br"
-python ferramenta.py dataset --api_key "sua chave aqui" --id "8"
-python ferramenta.py records --api_key "sua chave aqui" --filters family=piperaceae barcode="FURB38192" --schema "seu schema aqui"
+python ferramenta.py metadata --name "Secretaria Estadual" --id "400"
+python ferramenta.py participants
+python ferramenta.py instituition --acronym "USP" --id "393" --lang "en"  
+python ferramenta.py collection --acronym "ESA" --id "8" --lang "pt-br"
+python ferramenta.py dataset --id "8"
+python ferramenta.py records --filters family=piperaceae barcode="FURB38192" --table tabela_exemplo
+python ferramenta.py export --filters family=piperaceae --table tabela_exemplo --colums "coluna_exemplo" --output_csv_path resultados.csv
+python ferramenta.py update --filters stateprovince="São Paulo" --update_values="Santa Catarina" --table tabela_exemplo
 ```

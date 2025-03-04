@@ -1,4 +1,4 @@
-# Projeto-Herbario
+# HerbCoRe
 Catalogação do meu código sobre a HerbCoRe: uma ferramenta para seleção e filtragem de acervos de dados relacionados à plantas de herbários, com auxílio do professor André Luis Schwerz.
 
 ## Sobre a pasta specieslink:

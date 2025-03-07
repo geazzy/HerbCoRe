@@ -81,70 +81,6 @@ def save_result_to_txt_aligned(result_df, output_file):
             formatted_row = '  '.join(str(val).ljust(max_widths[i]) for i, val in enumerate(row))
             file.write(formatted_row + '\n')
 
-
-def process_plant_data(input_txt, output_txt):
-    with open(input_txt, 'r') as file:
-        lines = file.readlines() # salva todas as linhas do arquivo na lista
-    
-    # remove a linha separadora de --------------
-    lines = [line for line in lines if not line.startswith('-')]
-    
-    # extrair cabeçalho e linhas de dados
-    header = lines[0].strip().split() # pega o cabeçalho, remove os espaços e divide em colunas
-    data = [line.strip().split(maxsplit=len(header) - 1) for line in lines[1:]] # para cada linha além do cabeçalho, remove espaços e divide em colunas;
-    
-    # índices relevantes no cabeçalho pra uso posterior
-    genus_idx = header.index("Input.Genus")
-    epitheton_idx = header.index("Input.Epitheton")
-
-
-    results = []
-    seen_names = set()  # pra garantir que o nome não se repete
-    
-    for row in data:
-        genus = row[genus_idx]
-        epitheton = row[epitheton_idx]
-        
-        original_name = f"{genus} {epitheton}" # nome original, como colocado no banco
-        
-        if original_name in seen_names: # o nome já foi registrado?
-            continue  # se sim, ignora ele
-        seen_names.add(original_name) # caso não, adiciona na lista
-        
-        # buscando Output.Taxon - dois campos após o segundo número de 6 dígitos - por causa de um bug não posso usar ele diretamente
-        try:
-            # encontrar números de 6 dígitos e pegar os dois campos seguintes (gênero e epíteto)
-            numbers = [item for item in row if re.match(r'\d{6}', item)] # é um numero de 6 digitos
-            
-            if len(numbers) >= 2:
-                # se é um número maior do que debug: por enquanto 2
-                second_number_index = row.index(numbers[1]) # esse é o segundo maior numero
-                
-                # pegar os dois próximos campos após o segundo número de 6 dígitos
-                output_taxon = f"{row[second_number_index + 1]} {row[second_number_index + 2]}"
-        except Exception as e:
-            output_taxon = 'NA'
-            print(f"erro ao tentar capturar Output.Taxon: {e}")
-        
-        # eeterminar se é aceito e definir o nome final
-        if "accepted" in row or "accepted" in original_name: # se o nome é aceito
-            accepted = "sim"
-            final_name = original_name  # o nome aceito é o nome original
-        elif "synonym" in row or "synonym" in original_name: # se o nome é um sinônimo
-            accepted = "nao"
-            final_name = output_taxon  # o nome final é o nome do sinônimo
-        else:
-            accepted = "teste"  # o nome por algum motivo não se encaixa em accepted/synonym (pode ser unresolved) e por enquanto será marcado como teste
-            final_name = original_name  # o nome final é o nome original por agora
-        
-        results.append((original_name, accepted, final_name)) # adiciona o resultado à lista
-    
-    # escreve os resultados no arquivo de saída
-    with open(output_txt, 'w') as file:
-        file.write("NOME ORIGINAL\tACEITO\tNOME FINAL\n")
-        for original, accepted, final in results:
-            file.write(f"{original}\t{accepted}\t{final}\n")
-
 # DESCOMENTE O QUE FOR NECESSÁRIO
 
 # plant_names = extract_plants_from_txt(txt_file)
@@ -157,8 +93,3 @@ def process_plant_data(input_txt, output_txt):
 
 # save_result_to_txt_aligned(result, result_txt_file)
 # print(f"resultado salvo em: {result_txt_file}")
-
-# filtragem dos dados relevantes do txt fornecido anteriormente
-process_plant_data(input_txt, output_txt)
-
-print(f"resultado salvo em: {output_txt}")

@@ -14,9 +14,34 @@ Leia mais sobre o catálogo de Leipzig e o lcvplants [aqui](https://github.com/i
 Obtenha uma chave para a API se cadastrando no species_link [aqui](https://specieslink.net/ws/1.0/)
 
 ## Pré-requisitos:
-- Utilizar de ```requirements.txt``` para instalar os requisitos utilizando o seguinte comando:
+
+Utilize `venv` para instalação bas bibliotecas necessárias para o projeto:
+``` bash
+python3 -m venv .venv
+source .venv/bin/activate
+
 ```
-pip install -r requirements.txt
+
+Para utilizar a biblioteca `rpy2` é necessário tem instalado o R e definido a veriável de ambiente R_HOME.
+```
+sudo apt update
+sudo apt install r-base-core
+
+export R_HOME=/usr/lib/R
+```
+
+Alternativamente, você pode adicionar a linha `export R_HOME=/usr/lib/R` ao arquivo `~/.bashrc` para tornar a variável de ambiente padrão em todas as sessões.
+
+No linux Mint 22.1, também foi necessário instalar a biblioteca `libtirpc-dev`.
+``` bash
+sudo apt update
+sudo apt install libtirpc-dev
+```
+
+
+Por fim, instalar as biblioteca do python3
+```bash
+pip3 install -r requirements.txt
 ```
 
 ## Como usar a ferramenta:

@@ -26,11 +26,15 @@ Para utilizar a biblioteca `rpy2` é necessário tem instalado o R e definido a 
 ```
 sudo apt update
 sudo apt install r-base-core
+echo 'export R_HOME=/usr/lib/R' >> ~/.bashrc
+source ~/.bashrc
 
-export R_HOME=/usr/lib/R
+#no MacOS
+brew install r
+echo 'export R_HOME=/opt/homebrew/Cellar/r/4.4.3_1/lib/R' >> ~/.zshrc
+source ~/.zshrc
+
 ```
-
-Alternativamente, você pode adicionar a linha `export R_HOME=/usr/lib/R` ao arquivo `~/.bashrc` para tornar a variável de ambiente padrão em todas as sessões.
 
 No linux Mint 22.1, também foi necessário instalar a biblioteca `libtirpc-dev`.
 ``` bash
@@ -45,6 +49,19 @@ pip3 install -r requirements.txt
 ```
 
 ## Como usar a ferramenta:
+
+- Arquivo de configuração:
+Criar o arquivo `config.json` na pasta raiz. Exemplo:
+```
+{
+    "api_key": "XXXXXXXXX",
+    "db_user": "root",
+    "db_password": "xxxxx",
+    "db_host": "127.0.0.1",
+    "db_schema": "herbario" #dbname
+}
+```
+
 A ferramenta te pede um conjunto de comandos pelo terminal para executar o que se pede. Caso desconheça os parâmetros necessários para a busca, você pode usar de ```-h``` e ver os comentários com ajuda adicionados.
 ```python ferramenta.py -h``` lhe mostrará o seguinte:
 ```

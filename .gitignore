@@ -1,9 +1,12 @@
 .env
 .venv/
+10familias
 venv/
 __pycache__/
 testes/
 config.json
+credentials.json
+token.json
 deduplicacao.txt
 request+family+oxalidaceae+2026+03+25.csv
 dezoomify-rs.exe

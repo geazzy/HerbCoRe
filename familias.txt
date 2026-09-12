@@ -1,0 +1,71 @@
+10 famílias, com os taxonomistas e espécies comuns:
+
+Lauraceae (taxonomista: M.L. Brotto, H. van der Werff)
+Nectandra megapotamica
+Ocotea puberula
+Ocotea pulchella
+Endlicheria paniculata
+Nectandra lanceolata
+
+Myrtaceae (M. Sobral)
+Myrcia guianensis
+Eugenia florida
+Eugenia punicifolia
+Myrciaria floribunda
+Blepharocalyx salicifolius
+
+Solanaceae (J.R. Stehmann, L.A. Mentz)
+Solanum americanum
+Solanum pseudoquina
+Petunia integrifolia
+Cestrum strigilatum
+Solanum sisymbriifolium
+
+Malpighiaceae (M.C.H. Mamede, W.R. Anderson, R.F. Almeida)
+Byrsonima intermedia
+Niedenzuella multiglandulosa
+Alicia anisopetala
+Diplopterys pubipetala
+Byrsonima crassifolia
+
+Cyperaceae (R. Trevisan, M. Alves)
+Cyperus hermaphroditus
+Fimbristylis dichotoma
+Eleocharis montana
+Eleocharis sellowiana
+Eleocharis maculosa
+
+Meliaceae (T.D. Pennington, J.R. Pirani)
+Guarea guidonia
+Guarea kunthiana
+Trichilia pallida
+Cedrela fissilis
+Trichilia catigua
+
+Pteridaceae (J. Prado, F. Gonzatti, A.L. Gasper, P. Labiak, A. Salino)
+Vittaria lineata
+Pityrogramma calomelanos
+Adiantum latifolium
+Doryopteris concolor
+Adiantum raddianum
+
+Asteraceae (J.N. Nakajima, G. Heiden)
+Heterocondylus alatus
+Chromolaena laevigata
+Lepidaploa rufogrisea
+Baccharis linearifolia
+Baccharis dracunculifolia
+
+Melastomataceae (R. Goldenberg, F.S. Meyer, F.A. Michelangeli)
+Miconia pusilliflora
+Miconia albicans
+Acisanthera alsinaefolia
+Chaetogastra gracilis
+Tococa guianensis
+
+Sapindaceae (M.S. Ferrucci, A. Rosado, P. Acevedo-Rodríguez)
+Urvillea ulmacea
+Serjania lethalis
+Paullinia elegans
+Matayba guianensis
+Allophylus edulis

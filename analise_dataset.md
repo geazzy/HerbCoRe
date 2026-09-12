@@ -34,5 +34,58 @@ A profundidade temporal e espacial da coleção reflete a evolução histórica 
 
 ### Premissas e Notas Metodológicas
 
-* As siglas estaduais (ex.: *PR*, *SP*, *MG*) foram padronizadas aos nomes completos dos estados correspondentes para evitar duplicidades de contagem.
-* O conjunto de dados selecionado pela célula ativa foi interpretado como o contexto geral da tabela principal (`manifesto_imagens`).
+A composição do acervo segue critérios de escopo taxonômico, origem das imagens, resolução mínima e unicidade da coleta. Esses critérios definem o que entra no manifesto e o que pode ser substituído.
+
+#### Escopo taxonômico
+
+O acervo cobre dez famílias botânicas. Em cada família foram escolhidas **cinco espécies comuns**, com identificadores de referência (especialistas) usados como filtro `identifiedby` na busca. A imagem precisa ter sido identificada por um especialista da família em `familias.txt`. Nem todos os taxonomistas da lista precisam aparecer no manifesto: eles autorizam a busca. Só entram imagens cujo identificador está nessa lista para a família.
+
+| Família | Taxonomistas de referência | Espécies |
+|---|---|---|
+| Lauraceae | M.L. Brotto, H. van der Werff | *Nectandra megapotamica*, *Ocotea puberula*, *Ocotea pulchella*, *Endlicheria paniculata*, *Nectandra lanceolata* |
+| Myrtaceae | M. Sobral | *Myrcia guianensis*, *Eugenia florida*, *Eugenia punicifolia*, *Myrciaria floribunda*, *Blepharocalyx salicifolius* |
+| Solanaceae | J.R. Stehmann, L.A. Mentz | *Solanum americanum*, *Solanum pseudoquina*, *Petunia integrifolia*, *Cestrum strigilatum*, *Solanum sisymbriifolium* |
+| Malpighiaceae | M.C.H. Mamede, W.R. Anderson, R.F. Almeida | *Byrsonima intermedia*, *Niedenzuella multiglandulosa*, *Alicia anisopetala*, *Diplopterys pubipetala*, *Byrsonima crassifolia* |
+| Cyperaceae | R. Trevisan, M. Alves | *Cyperus hermaphroditus*, *Fimbristylis dichotoma*, *Eleocharis montana*, *Eleocharis sellowiana*, *Eleocharis maculosa* |
+| Meliaceae | T.D. Pennington, J.R. Pirani | *Guarea guidonia*, *Guarea kunthiana*, *Trichilia pallida*, *Cedrela fissilis*, *Trichilia catigua* |
+| Pteridaceae | J. Prado, F. Gonzatti, A.L. Gasper, P. Labiak, A. Salino | *Vittaria lineata*, *Pityrogramma calomelanos*, *Adiantum latifolium*, *Doryopteris concolor*, *Adiantum raddianum* |
+| Asteraceae | J.N. Nakajima, G. Heiden | *Heterocondylus alatus*, *Chromolaena laevigata*, *Lepidaploa rufogrisea*, *Baccharis linearifolia*, *Baccharis dracunculifolia* |
+| Melastomataceae | R. Goldenberg, F.S. Meyer, F.A. Michelangeli | *Miconia pusilliflora*, *Miconia albicans*, *Acisanthera alsinaefolia*, *Chaetogastra gracilis*, *Tococa guianensis* |
+| Sapindaceae | M.S. Ferrucci, A. Rosado, P. Acevedo-Rodríguez | *Urvillea ulmacea*, *Serjania lethalis*, *Paullinia elegans*, *Matayba guianensis*, *Allophylus edulis* |
+
+#### Fonte, formato e organização
+
+* **Fonte:** galeria pública do speciesLink (`flags=photo`), com família e nome científico da espécie.
+* **Download:** JPEG via endpoint `osd-dezoomify`. Só é aceito arquivo que começa com assinatura JPEG (`FF D8`) e tem tamanho útil.
+* **Caminho:** `10familias/<Família>/<Espécie>/<CODIGO>.jpg` (espaços e caracteres especiais viram `_`).
+* **Inventário:** `10familias/manifesto_imagens.csv` — uma linha por imagem.
+* **Cobertura espacial:** não há filtro geográfico nem de herbário. O conjunto concentra registros do Brasil, mas inclui outros países quando a imagem atende aos demais critérios.
+
+#### Resolução mínima
+
+Largura **e** altura devem ser **≥ 1024 px**. A galeria do speciesLink já informa dimensões; candidatas abaixo do limiar nem são baixadas. Depois do download, a resolução real é medida no arquivo. Se falhar o limiar, o JPEG é apagado e o código não entra no manifesto.
+
+#### Unicidade da coleta (duplicata de herbário)
+
+Duplicata, neste acervo, é a **mesma coleta** depositada em herbários diferentes, e não a segunda foto do mesmo barcode.
+
+A chave de coleta (`chave_coleta`) junta:
+
+1. **primeiro coletor**, sem acento, só letras e números, em maiúsculas;
+2. **número do coletor**, nas mesmas regras.
+
+Exemplos de número tratado como ausente (não geram chave): `s.n.`, `s/n`, `sn`, `sine numero`, `sem número`. Sem coletor **ou** sem número, a chave fica vazia e a folha não entra no agrupamento de duplicatas.
+
+No grupo com a mesma `chave_coleta` e barcodes diferentes:
+
+* **mantém-se a de maior resolução** (maior área em pixels);
+* empate: `TRUE` > `PENDENTE` > demais;
+* empate seguinte: código.
+
+A extra só sai se existir substituta com **outra** `chave_coleta`, ainda não usada no acervo. Sem substituta, a extra permanece.
+
+#### Coletor e número (`s.n.`)
+
+Prefere-se folha com coletor **e** número de coleta, para permitir a marcação de duplicata. Imagens sem `chave_coleta` foram trocadas quando havia substituta com chave inédita. Sem substituta com coletor e número, a imagem antiga **não é removida**.
+
+Exceção conhecida no acervo atual: `SMDB005093` (*Cestrum strigilatum*, coletor Silva, E.M.A., sem número). O speciesLink não ofereceu outra folha com número para essa espécie/especialista.
